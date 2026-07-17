@@ -13,10 +13,12 @@ interface Props {
 export function HealthBadge({ health, onRefresh }: Props) {
   let label = 'checking…'
   let className = 'badge badge-muted'
+  let detail: string | null = null
 
   if (health.kind === 'unreachable') {
     label = 'backend unreachable'
     className = 'badge badge-danger'
+    detail = health.message
   } else if (health.kind === 'ok') {
     if (!health.data.apiKeyConfigured) {
       label = 'ok · API key missing'
@@ -29,7 +31,10 @@ export function HealthBadge({ health, onRefresh }: Props) {
 
   return (
     <div className="health-row">
-      <span className={className}>{label}</span>
+      <div className="health-text">
+        <span className={className}>{label}</span>
+        {detail ? <span className="health-detail">{detail}</span> : null}
+      </div>
       <button type="button" className="btn btn-ghost" onClick={onRefresh}>
         Refresh
       </button>

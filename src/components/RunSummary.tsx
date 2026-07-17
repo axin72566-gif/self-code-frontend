@@ -4,10 +4,17 @@ interface Props {
   phase: RunPhase
   message: string | null
   changedFiles: string[]
+  verifyStatus: string | null
 }
 
-export function RunSummary({ phase, message, changedFiles }: Props) {
-  if (phase === 'idle' || phase === 'starting' || phase === 'running') {
+export function RunSummary({ phase, message, changedFiles, verifyStatus }: Props) {
+  if (
+    phase === 'idle' ||
+    phase === 'starting' ||
+    phase === 'running' ||
+    phase === 'awaiting_approval' ||
+    phase === 'cancelling'
+  ) {
     return null
   }
 
@@ -33,6 +40,12 @@ export function RunSummary({ phase, message, changedFiles }: Props) {
   return (
     <section className="summary summary-ok">
       <h2>完成</h2>
+      {verifyStatus ? (
+        <>
+          <h3>Verify</h3>
+          <pre className="message-block">{verifyStatus}</pre>
+        </>
+      ) : null}
       {changedFiles.length > 0 ? (
         <>
           <h3>Changed files</h3>

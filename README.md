@@ -1,8 +1,8 @@
-# self-code-frontend（P0）
+# self-code-frontend（P1 Session）
 
-编码助手 Web 控制台：提交任务、订阅 SSE 事件流、取消运行。
+编码助手 Web 控制台：创建/恢复 session、多轮任务、计划/命令审批、SSE 事件、取消运行。
 
-对接后端：`self-code-backend` 的 `/api/v1/*`（见后端 `docs/api-p0.md`）。
+对接后端：`self-code-backend`（`docs/api-p1.md`）。
 
 ## 开发
 
@@ -14,19 +14,16 @@ npm install
 npm run dev
 ```
 
-浏览器打开 `http://localhost:5173`。
-
-Vite 已将 `/api` 代理到 `http://localhost:8123`，无需配置 CORS。
-
-可选：`VITE_API_BASE` 指向其它 API 前缀（默认空字符串，走同源 `/api`）。
+浏览器打开 `http://localhost:5173`。Vite 将 `/api` 代理到后端。
 
 ## 使用
 
-1. 顶栏查看 health / API key 状态  
-2. 填写 **Task**、服务器本地 **Workdir**  
-3. 需要自动批准危险命令时勾选 **yes**  
-4. **Start** 后查看 Event stream；可 **Cancel**  
-5. 结束后查看 Changed files / Summary（取消或失败不会显示成功）
+1. 填写 **Workdir** + **Task**；首次 Start 创建 session  
+2. 默认 `approvalLevel=confirm`：先审批计划，危险/需复核命令也会弹出 Approve/Reject  
+3. 勾选 **auto** 跳过计划与命令审批（等价 `yes=true`）  
+4. 有文件改动时，后端会跑探测验证（mvn/npm），Event stream / Summary 可见 `verify`  
+5. **Resume** / 刷新自动恢复 `localStorage` 中的 `selfcode.sessionId`  
+6. **New Session** 清空当前会话  
 
 ## 脚本
 

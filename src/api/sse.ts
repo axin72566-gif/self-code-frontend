@@ -1,6 +1,16 @@
 import type { SseEventType } from './types'
 
-const EVENT_TYPES: SseEventType[] = ['tool', 'message', 'changed_files', 'error', 'done']
+const EVENT_TYPES: SseEventType[] = [
+  'tool',
+  'message',
+  'changed_files',
+  'error',
+  'done',
+  'ping',
+  'approval_needed',
+  'approval_resolved',
+  'verify',
+]
 
 export interface RunEventHandlers {
   onEvent: (type: SseEventType, data: string) => void
@@ -13,8 +23,12 @@ export function subscribeRunEvents(runId: string, handlers: RunEventHandlers): (
   const url = `${API_BASE}/api/v1/runs/${encodeURIComponent(runId)}/events`
   const source = new EventSource(url)
   let closed = false
+  let opened = false
+  let errorTicks = 0
 
   source.onopen = () => {
+    opened = true
+    errorTicks = 0
     handlers.onOpen?.()
   }
 
@@ -30,9 +44,15 @@ export function subscribeRunEvents(runId: string, handlers: RunEventHandlers): (
 
   source.onerror = () => {
     if (closed) return
-    // EventSource retries by default; if connection dies after terminal, ignore.
-    if (source.readyState === EventSource.CLOSED) {
-      handlers.onTransportError?.('SSE connection closed')
+    errorTicks += 1
+    // After open, repeated errors usually mean the stream died; stop retrying.
+    if (opened && (source.readyState === EventSource.CLOSED || errorTicks >= 2)) {
+      handlers.onTransportError?.('SSE connection lost')
+      close()
+      return
+    }
+    if (!opened && source.readyState === EventSource.CLOSED) {
+      handlers.onTransportError?.('SSE connection failed')
       close()
     }
   }

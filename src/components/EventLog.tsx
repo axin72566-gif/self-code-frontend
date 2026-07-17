@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import type { LogEntry } from '../api/types'
 
 interface Props {
@@ -5,6 +6,12 @@ interface Props {
 }
 
 export function EventLog({ entries }: Props) {
+  const bottomRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [entries])
+
   if (entries.length === 0) {
     return <div className="log empty">事件流将显示在这里</div>
   }
@@ -17,6 +24,7 @@ export function EventLog({ entries }: Props) {
           <span className="log-data">{e.data}</span>
         </div>
       ))}
+      <div ref={bottomRef} />
     </div>
   )
 }
